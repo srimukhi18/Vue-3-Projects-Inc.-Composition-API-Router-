@@ -2,20 +2,29 @@
   <teleport to="#modal">
     <AddUpdateForm
       v-if="showForm"
-      @close-form="showForm = false"
+      @close-form="closeForm"
       @add-new-event="add($event)"
+      @update-event="update($event)"
+      :currentEvent="currentEvent"
     />
   </teleport>
   <div class="options">
-    <button @click="showPastEvents = !showPastEvents">show past event</button>
+    <div class="option_buttons">
+      <button @click="showPastEvents = !showPastEvents">show past event</button>
+      <button @click="grayModeSet = !grayModeSet">
+        {{ grayModeSet ? '&#9788;' : '&#9789;' }}
+      </button>
+    </div>
     <button class="addNew" @click="showForm = !showForm">&#43;</button>
   </div>
   <ul>
-    <li v-for="event in orderEvents" :key="event.id">
+    <li v-for="event in orderEvents" :key="event.id" @click="setForm(event)">
       <Event
+        :style="grayModeSet ? grayMode : ''"
         :event="event"
         :daysLeft="daysLeft(event)"
         :showPastEvents="showPastEvents"
+        @remove-event="remove($event)"
       />
     </li>
   </ul>
@@ -78,17 +87,43 @@ export default {
   },
   data() {
     return {
+      grayModeSet: false,
+      grayMode: {
+        background: 'lightslategray',
+        color: '#454444',
+      },
       events: eventData,
       showPastEvents: true,
       showForm: false,
+      currentEvent: {},
     };
   },
 
   methods: {
+    findEventIndex(id) {
+      return this.events.findIndex((el) => el.id === id);
+    },
+    remove(event) {
+      //const index = this.events.findIndex((el) => el.id === event.id);
+
+      this.events.splice(this.findEventIndex(event.id), 1);
+    },
+    closeForm() {
+      this.showForm = false;
+      this.currentEvent = {};
+    },
+    update(event) {
+      //const index = this.events.findIndex((el) => el.id === event.id);
+      this.events[this.findEventIndex(event.id)] = event;
+    },
+    setForm(event) {
+      this.currentEvent = event || {};
+      this.showForm = true;
+    },
     add(event) {
       event.id = this.events.length + 1;
       this.events.push(event);
-      this.showForm = false;
+      // this.showForm = false;
     },
     daysLeft(event) {
       const Time = Date.parse(event.date) - Date.now();
@@ -118,6 +153,30 @@ ul {
 
 li {
   list-style: none;
+  cursor: pointer;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.addNew {
+  font-size: 3rem;
+  color: rgb(92, 84, 84);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.option_buttons > button {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  background: none;
+  border-radius: 1rem;
+  border: 2px lightsteelblue solid;
+  font-size: 1.2rem;
   cursor: pointer;
 }
 </style>
