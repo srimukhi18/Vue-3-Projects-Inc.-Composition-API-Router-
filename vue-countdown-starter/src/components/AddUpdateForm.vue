@@ -1,7 +1,11 @@
 <template>
   <div class="form_wrapper">
-    <form>
-      {{ event }}
+    <form @keyup.enter.prevent="validate()">
+      <div v-if="errors.length > 0">
+        <ul>
+          <li v-for="error in errors" :key="error">{{ error }}</li>
+        </ul>
+      </div>
       <button class="close" @click="$emit('close-form')">&#10060;</button>
       <div>
         <label for="name">Name</label>
@@ -28,7 +32,10 @@
         </select>
       </div>
       <div>
-        <button @click.prevent="$emit('add-new-event', event)">add</button>
+        <button v-if="currentEvent.id" @click.prevent="validate('update')">
+          update
+        </button>
+        <button v-else @click.prevent="validate('add')">add</button>
       </div>
     </form>
   </div>
@@ -36,11 +43,44 @@
 
 <script>
 export default {
-  emits: ["close-form", "add-new-event"],
+  //props: ['currentEvent'],
+  props: {
+    currentEvent: {
+      type: Object,
+    },
+  },
+  emits: ['close-form', 'add-new-event', 'update-event'],
+  mounted() {
+    this.event = this.currentEvent;
+  },
   data() {
     return {
       event: {},
+      errors: [],
     };
+  },
+  methods: {
+    addEvent() {
+      this.$emit('add-new-event', this.event);
+      this.$emit('close-form');
+    },
+    updateEvent() {
+      this.$emit('update-event', this.event);
+      this.$emit('close-form');
+    },
+    validate(type) {
+      this.errors = [];
+      if (!this.event.name) this.errors.push('Name is required');
+      if (!this.event.details) this.errors.push('Event details is required');
+      if (!this.event.date) this.errors.push('Event date is required');
+      if (!this.event.background)
+        this.errors.push('Event background is required');
+      // has errors, don't add event
+      if (this.errors.length > 0) return;
+      // no errors, add event to array
+      if (type === 'add') this.addEvent();
+      else this.updateEvent();
+    },
   },
 };
 </script>

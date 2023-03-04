@@ -1,19 +1,23 @@
 <template>
+  <div class="remove_btn_wrapper">
+    <button @click.stop="remove()" class="remove_btn">&#10060;</button>
+  </div>
   <article
     v-show="Math.sign(daysLeft) !== -1 || showPastEvents"
     :style="{
       background: event.background,
       color: changeContrast ? '#454444' : 'whitsmoke',
     }"
+    v-bind="$attrs"
   >
     <div class="data">
       <h3 class="name">{{ event.name }}</h3>
       <p class="details">{{ event.details }}</p>
     </div>
     <div class="countdown">
-      <div class="remove_btn_wrapper">
-        <button class="remove_btn">&#10060;</button>
-      </div>
+      <!-- <div class="remove_btn_wrapper">
+        <button @click.stop="remove()" class="remove_btn">&#10060;</button>
+      </div> -->
       <p v-if="daysLeft === 0">Today!</p>
       <p v-else>
         {{ Math.abs(daysLeft) }}
@@ -27,7 +31,22 @@
 <script>
 module.exports = {
   name: 'Event',
-  props: ['event', 'daysLeft', 'showPastEvents'],
+  // inheritAttrs: false,
+  mounted() {
+    console.log(this.$attrs);
+  },
+  // props: ['event', 'daysLeft', 'showPastEvents'],
+  props: {
+    event: { type: Object },
+    daysLeft: { type: Number, default: 10 },
+    showPastEvents: { type: Boolean },
+  },
+  emits: ['remove-event'],
+  methods: {
+    remove() {
+      this.$emit('remove-event', this.event);
+    },
+  },
   computed: {
     daysLeftString() {
       const dayOrDays = this.daysLeft === 1 ? 'day ' : 'days ';
